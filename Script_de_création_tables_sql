@@ -1,0 +1,250 @@
+-- ============================================================
+-- PROJET : FESTIVAL DE MUSIQUE SUR TROIS SCENES
+-- SCRIPT DE CREATION DES TABLES
+-- SGBD : ORACLE
+-- ============================================================
+
+
+-- ============================================================
+-- 1. PERSONNE
+-- Table mère de SPECTATEUR et ARTISTE
+-- ============================================================
+
+CREATE TABLE PERSONNE (
+    id_personne NUMBER,
+    nom         VARCHAR2(100) NOT NULL,
+    prenom      VARCHAR2(100) NOT NULL,
+
+    CONSTRAINT PK_PERSONNE
+        PRIMARY KEY (id_personne)
+);
+
+
+-- ============================================================
+-- 2. SCENE
+-- ============================================================
+
+CREATE TABLE SCENE (
+    id_scene NUMBER,
+    nom      VARCHAR2(100) NOT NULL,
+    ville    VARCHAR2(100) NOT NULL,
+    role     VARCHAR2(50) NOT NULL,
+
+    CONSTRAINT PK_SCENE
+        PRIMARY KEY (id_scene),
+
+    CONSTRAINT CK_SCENE_NOM
+        CHECK (nom IN (
+            'Siège',
+            'Scène Nord',
+            'Scène Sud',
+            'Scène Est'
+        )),
+
+    CONSTRAINT CK_SCENE_ROLE
+        CHECK (role IN ('Siège', 'Site'))
+);
+
+
+-- ============================================================
+-- 3. SPECTATEUR
+-- Sous-classe de PERSONNE
+-- ============================================================
+
+CREATE TABLE SPECTATEUR (
+    id_personne NUMBER,
+    ville       VARCHAR2(100),
+    email       VARCHAR2(150),
+    telephone   VARCHAR2(20),
+    id_scene    NUMBER,
+
+    CONSTRAINT PK_SPECTATEUR
+        PRIMARY KEY (id_personne),
+
+    CONSTRAINT FK_SPECT_PERSONNE
+        FOREIGN KEY (id_personne)
+        REFERENCES PERSONNE (id_personne),
+
+    CONSTRAINT FK_SPECT_SCENE
+        FOREIGN KEY (id_scene)
+        REFERENCES SCENE (id_scene),
+
+    CONSTRAINT CK_SPECT_EMAIL
+        CHECK (
+            email IS NULL
+            OR REGEXP_LIKE(
+                email,
+                '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+            )
+        ),
+
+    CONSTRAINT CK_SPECT_TELEPHONE
+        CHECK (
+            telephone IS NULL
+            OR REGEXP_LIKE(
+                telephone,
+                '^(\+33[1-9]|0[1-9])[0-9]{8}$'
+            )
+        )
+);
+
+
+-- ============================================================
+-- 4. ARTISTE
+-- Sous-classe de PERSONNE
+-- ============================================================
+
+CREATE TABLE ARTISTE (
+    id_personne      NUMBER,
+    nom_de_scene     VARCHAR2(100) NOT NULL,
+    type_artiste     VARCHAR2(50),
+    genre_musical    VARCHAR2(100),
+    label_production VARCHAR2(100),
+
+    CONSTRAINT PK_ARTISTE
+        PRIMARY KEY (id_personne),
+
+    CONSTRAINT FK_ARTISTE_PERSONNE
+        FOREIGN KEY (id_personne)
+        REFERENCES PERSONNE (id_personne)
+);
+
+
+-- ============================================================
+-- 5. CONCERT
+-- Chaque concert se déroule sur une scène
+-- ============================================================
+
+CREATE TABLE CONCERT (
+    id_concert     NUMBER,
+    libelle        VARCHAR2(150) NOT NULL,
+    categorie      VARCHAR2(100),
+    debut          TIMESTAMP NOT NULL,
+    duree_minutes  NUMBER NOT NULL,
+    capacite       NUMBER NOT NULL,
+    prix_unitaire  NUMBER(10, 2) NOT NULL,
+    id_scene       NUMBER NOT NULL,
+
+    CONSTRAINT PK_CONCERT
+        PRIMARY KEY (id_concert),
+
+    CONSTRAINT FK_CONCERT_SCENE
+        FOREIGN KEY (id_scene)
+        REFERENCES SCENE (id_scene),
+
+    CONSTRAINT CK_CONCERT_DUREE
+        CHECK (duree_minutes > 0),
+
+    CONSTRAINT CK_CONCERT_CAPACITE
+        CHECK (capacite > 0),
+
+    CONSTRAINT CK_CONCERT_PRIX
+        CHECK (prix_unitaire >= 0)
+);
+
+
+-- ============================================================
+-- 6. BILLET
+-- Relation réflexive : un billet peut référencer un autre billet
+-- ============================================================
+
+CREATE TABLE BILLET (
+    id_billet       NUMBER,
+    date_billet     DATE NOT NULL,
+    nb_places       NUMBER NOT NULL,
+    montant         NUMBER(10, 2) NOT NULL,
+    statut          VARCHAR2(30) NOT NULL,
+    id_spectateur   NUMBER NOT NULL,
+    id_billet_groupe NUMBER,
+    id_concert      NUMBER NOT NULL,
+
+    CONSTRAINT PK_BILLET
+        PRIMARY KEY (id_billet),
+
+    CONSTRAINT FK_BILLET_SPECT
+        FOREIGN KEY (id_spectateur)
+        REFERENCES SPECTATEUR (id_personne),
+
+    CONSTRAINT FK_BILLET_GROUPE
+        FOREIGN KEY (id_billet_groupe)
+        REFERENCES BILLET (id_billet),
+
+    CONSTRAINT FK_BILLET_CONCERT
+        FOREIGN KEY (id_concert)
+        REFERENCES CONCERT (id_concert),
+
+    CONSTRAINT CK_BILLET_PLACES
+        CHECK (nb_places BETWEEN 1 AND 10),
+
+    CONSTRAINT CK_BILLET_MONTANT
+        CHECK (montant >= 0),
+
+    CONSTRAINT CK_BILLET_STATUT
+        CHECK (statut IN (
+            'RESERVE',
+            'PAYE',
+            'ANNULE',
+            'INVITE'
+        ))
+);
+
+
+-- ============================================================
+-- 7. RATTACHER
+-- Association entre SPECTATEUR et SCENE
+-- ============================================================
+
+CREATE TABLE RATTACHER (
+    id_personne     NUMBER,
+    id_scene        NUMBER,
+    date_inscription DATE NOT NULL,
+
+    CONSTRAINT PK_RATTACHER
+        PRIMARY KEY (id_personne, id_scene),
+
+    CONSTRAINT FK_RATT_PERSONNE
+        FOREIGN KEY (id_personne)
+        REFERENCES SPECTATEUR (id_personne),
+
+    CONSTRAINT FK_RATT_SCENE
+        FOREIGN KEY (id_scene)
+        REFERENCES SCENE (id_scene)
+);
+
+
+-- ============================================================
+-- 8. JOUER
+-- Association entre ARTISTE et CONCERT
+-- ============================================================
+
+CREATE TABLE JOUER (
+    id_personne      NUMBER,
+    id_concert       NUMBER,
+    ordre_de_passage NUMBER NOT NULL,
+    cachet           NUMBER(10, 2) NOT NULL,
+
+    CONSTRAINT PK_JOUER
+        PRIMARY KEY (id_personne, id_concert),
+
+    CONSTRAINT FK_JOUER_ARTISTE
+        FOREIGN KEY (id_personne)
+        REFERENCES ARTISTE (id_personne),
+
+    CONSTRAINT FK_JOUER_CONCERT
+        FOREIGN KEY (id_concert)
+        REFERENCES CONCERT (id_concert),
+
+    CONSTRAINT CK_JOUER_ORDRE
+        CHECK (ordre_de_passage > 0),
+
+    CONSTRAINT CK_JOUER_CACHET
+        CHECK (cachet >= 0),
+
+    CONSTRAINT UQ_JOUER_ORDRE
+        UNIQUE (id_concert, ordre_de_passage)
+);
+
+
+-- ============================================================
+-- FIN DU SCRIPT DE CREATION
+-- ============================================================
