@@ -46,13 +46,13 @@ CREATE TABLE SCENE (
     CONSTRAINT CK_SCENE_NOM
         CHECK (nom IN (
             'Siège',
-            'Scène Nord',
-            'Scène Sud',
-            'Scène Est'
+            'Site Scène Nord',
+            'Site Scène Sud',
+            'Site Scène Est'
         )),
 
     CONSTRAINT CK_SCENE_ROLE
-        CHECK (role IN ('Siège', 'Site'))
+        CHECK (role IN ('siège', 'site'))
 );
 
 
