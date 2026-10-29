@@ -1,0 +1,134 @@
+/* =====================================================================
+   FESTIVAL DE MUSIQUE — 04 : jeu de données pour ARTISTE et JOUER
+   Oracle — à exécuter avec F5 APRÈS 02_chargement.sql (les concerts
+   doivent déjà être chargés). Script ré-exécutable.
+
+   Données FICTIVES (aucun artiste réel) :
+     - 30 artistes, 6 par genre (jazz, rock, rap, électro, classique),
+       identifiants 100001 à 100030 pour ne pas croiser les spectateurs
+       (1 à 21 962) dans PERSONNE
+     - chaque concert reçoit 1 à 3 artistes de son genre ; le dernier
+       à passer est la tête d'affiche et touche le plus gros cachet
+   Pour un groupe, PERSONNE contient son représentant (nom, prénom
+   obligatoires dans le modèle).
+   ===================================================================== */
+
+SET DEFINE OFF;
+
+-- Remise à zéro des données artistes
+DELETE FROM JOUER;
+DELETE FROM ARTISTE WHERE id_personne BETWEEN 100001 AND 100030;
+DELETE FROM PERSONNE WHERE id_personne BETWEEN 100001 AND 100030;
+
+------------------------------------------------------------------------
+-- 1. PERSONNE (partie commune de l'héritage)
+------------------------------------------------------------------------
+INSERT INTO PERSONNE (id_personne, nom, prenom)
+SELECT 100001, 'Arnaud',    'Lina'     FROM dual UNION ALL
+SELECT 100002, 'Delmas',    'Hugo'     FROM dual UNION ALL
+SELECT 100003, 'Kerbrat',   'Maëlle'   FROM dual UNION ALL
+SELECT 100004, 'Ndiaye',    'Ousmane'  FROM dual UNION ALL
+SELECT 100005, 'Vasseur',   'Camille'  FROM dual UNION ALL
+SELECT 100006, 'Ferrand',   'Basile'   FROM dual UNION ALL
+SELECT 100007, 'Collet',    'Romain'   FROM dual UNION ALL
+SELECT 100008, 'Marchal',   'Inès'     FROM dual UNION ALL
+SELECT 100009, 'Leclerc',   'Théo'     FROM dual UNION ALL
+SELECT 100010, 'Barbier',   'Jade'     FROM dual UNION ALL
+SELECT 100011, 'Poulain',   'Victor'   FROM dual UNION ALL
+SELECT 100012, 'Hamon',     'Clara'    FROM dual UNION ALL
+SELECT 100013, 'Diallo',    'Moussa'   FROM dual UNION ALL
+SELECT 100014, 'Benali',    'Yasmine'  FROM dual UNION ALL
+SELECT 100015, 'Caron',     'Nathan'   FROM dual UNION ALL
+SELECT 100016, 'Traoré',    'Awa'      FROM dual UNION ALL
+SELECT 100017, 'Lemaire',   'Kylian'   FROM dual UNION ALL
+SELECT 100018, 'Mendes',    'Rafael'   FROM dual UNION ALL
+SELECT 100019, 'Girard',    'Elsa'     FROM dual UNION ALL
+SELECT 100020, 'Royer',     'Maxime'   FROM dual UNION ALL
+SELECT 100021, 'Chevalier', 'Nora'     FROM dual UNION ALL
+SELECT 100022, 'Perrin',    'Léon'     FROM dual UNION ALL
+SELECT 100023, 'Aubert',    'Zélie'    FROM dual UNION ALL
+SELECT 100024, 'Lacroix',   'Samuel'   FROM dual UNION ALL
+SELECT 100025, 'Fontaine',  'Margot'   FROM dual UNION ALL
+SELECT 100026, 'Rolland',   'Étienne'  FROM dual UNION ALL
+SELECT 100027, 'Vidal',     'Apolline' FROM dual UNION ALL
+SELECT 100028, 'Brunet',    'Antoine'  FROM dual UNION ALL
+SELECT 100029, 'Huet',      'Céleste'  FROM dual UNION ALL
+SELECT 100030, 'Masson',    'Gaspard'  FROM dual;
+
+------------------------------------------------------------------------
+-- 2. ARTISTE (sous-type de PERSONNE)
+--    genre_musical = catégorie des concerts, pour pouvoir les associer
+------------------------------------------------------------------------
+INSERT INTO ARTISTE (id_personne, nom_de_scene, type_artiste, genre_musical, label_production)
+SELECT 100001, 'Lina Arnaud Quartet',      'Groupe',    'jazz',      'Label Lumière'        FROM dual UNION ALL
+SELECT 100002, 'Hugo Delmas Trio',         'Groupe',    'jazz',      'Studio Garonne'       FROM dual UNION ALL
+SELECT 100003, 'Maëlle K.',                'Solo',      'jazz',      'Indépendant'          FROM dual UNION ALL
+SELECT 100004, 'Les Noctambules du Canal', 'Groupe',    'jazz',      'Label Lumière'        FROM dual UNION ALL
+SELECT 100005, 'Camille V.',               'Solo',      'jazz',      'Ondes Vertes Prod'    FROM dual UNION ALL
+SELECT 100006, 'Big Band Saint-Ferréol',   'Orchestre', 'jazz',      'Studio Garonne'       FROM dual UNION ALL
+SELECT 100007, 'Fil de Fer',               'Groupe',    'rock',      'Bruit Blanc Records'  FROM dual UNION ALL
+SELECT 100008, 'Inès et les Orages',       'Groupe',    'rock',      'Bruit Blanc Records'  FROM dual UNION ALL
+SELECT 100009, 'Théo Leclerc',             'Solo',      'rock',      'Indépendant'          FROM dual UNION ALL
+SELECT 100010, 'Jade Barbier',             'Solo',      'rock',      'Ondes Vertes Prod'    FROM dual UNION ALL
+SELECT 100011, 'Les Volts Perdus',         'Groupe',    'rock',      'Studio Garonne'       FROM dual UNION ALL
+SELECT 100012, 'Clara H. et la Meute',     'Groupe',    'rock',      'Label Lumière'        FROM dual UNION ALL
+SELECT 100013, 'MDK Quatre-Vents',         'Solo',      'rap',       'Béton Sonore'         FROM dual UNION ALL
+SELECT 100014, 'Yaz B.',                   'Solo',      'rap',       'Béton Sonore'         FROM dual UNION ALL
+SELECT 100015, 'Collectif Bitume Doux',    'Groupe',    'rap',       'Indépendant'          FROM dual UNION ALL
+SELECT 100016, 'Awa T.',                   'Solo',      'rap',       'Ondes Vertes Prod'    FROM dual UNION ALL
+SELECT 100017, 'K-Lem',                    'Solo',      'rap',       'Béton Sonore'         FROM dual UNION ALL
+SELECT 100018, 'Duo Rafa & Sam',           'Duo',       'rap',       'Studio Garonne'       FROM dual UNION ALL
+SELECT 100019, 'Elsa Gir',                 'DJ',        'électro',   'Pulse Nord'           FROM dual UNION ALL
+SELECT 100020, 'Maxwell Roy',              'DJ',        'électro',   'Pulse Nord'           FROM dual UNION ALL
+SELECT 100021, 'Nora Chevalier Live',      'Solo',      'électro',   'Ondes Vertes Prod'    FROM dual UNION ALL
+SELECT 100022, 'Léon Prism',               'DJ',        'électro',   'Indépendant'          FROM dual UNION ALL
+SELECT 100023, 'Zélie Onde',               'Solo',      'électro',   'Pulse Nord'           FROM dual UNION ALL
+SELECT 100024, 'Circuit Lacroix',          'Duo',       'électro',   'Label Lumière'        FROM dual UNION ALL
+SELECT 100025, 'Ensemble Fontaine',        'Orchestre', 'classique', 'Éditions Clavecin'    FROM dual UNION ALL
+SELECT 100026, 'Étienne Rolland',          'Solo',      'classique', 'Éditions Clavecin'    FROM dual UNION ALL
+SELECT 100027, 'Quatuor Apolline',         'Groupe',    'classique', 'Studio Garonne'       FROM dual UNION ALL
+SELECT 100028, 'Orchestre des Trois Rives','Orchestre', 'classique', 'Éditions Clavecin'    FROM dual UNION ALL
+SELECT 100029, 'Céleste Huet',             'Solo',      'classique', 'Label Lumière'        FROM dual UNION ALL
+SELECT 100030, 'Duo Masson-Brunet',        'Duo',       'classique', 'Indépendant'          FROM dual;
+
+------------------------------------------------------------------------
+-- 3. JOUER (association porteuse ARTISTE <-> CONCERT)
+--    Concert n : 1 + MOD(n, 3) artistes du même genre que le concert.
+--    Les artistes choisis sont distincts (rangs MOD(n + k, 6) + 1, k = 1..3),
+--    ce qui respecte PK_JOUER et UQ_JOUER_ORDRE.
+------------------------------------------------------------------------
+INSERT INTO JOUER (id_personne, id_concert, ordre_de_passage, cachet)
+SELECT a.id_personne,
+       c.id_concert,
+       k.n AS ordre_de_passage,
+       CASE WHEN k.n = 1 + MOD(c.id_concert, 3)                    -- tête d'affiche
+            THEN 3000 + MOD(c.id_concert * 37, 10) * 500
+            ELSE 800  + MOD(c.id_concert * 13 + k.n * 7, 8) * 150   -- première partie
+       END AS cachet
+FROM CONCERT c
+CROSS JOIN (SELECT LEVEL AS n FROM dual CONNECT BY LEVEL <= 3) k
+JOIN (SELECT id_personne, genre_musical,
+             ROW_NUMBER() OVER (PARTITION BY genre_musical ORDER BY id_personne) AS rang
+      FROM ARTISTE) a
+  ON  a.genre_musical = c.categorie
+  AND a.rang = MOD(c.id_concert + k.n, 6) + 1
+WHERE k.n <= 1 + MOD(c.id_concert, 3);
+
+COMMIT;
+
+------------------------------------------------------------------------
+-- 4. VÉRIFICATION
+------------------------------------------------------------------------
+SELECT (SELECT COUNT(*) FROM ARTISTE) AS nb_artistes,
+       (SELECT COUNT(*) FROM JOUER)   AS nb_passages,
+       (SELECT COUNT(DISTINCT id_concert) FROM JOUER) AS concerts_programmes,
+       (SELECT COUNT(*) FROM CONCERT) AS concerts_total
+FROM dual;
+
+-- Exemple : programme des 3 premiers concerts
+SELECT j.id_concert, c.libelle, j.ordre_de_passage, a.nom_de_scene, j.cachet
+FROM JOUER j
+JOIN ARTISTE a ON a.id_personne = j.id_personne
+JOIN CONCERT c ON c.id_concert  = j.id_concert
+WHERE j.id_concert <= 3
+ORDER BY j.id_concert, j.ordre_de_passage;
